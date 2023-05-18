@@ -1,4 +1,4 @@
-# 脚本来源互联网分享，这里仅供学习，请勿用来不正当获利。
+# 脚本来源互联网分享，供学习参考。
 
 * [电信云盘自动签到](https://raw.githubusercontent.com/SStarbuckS/auto_scripts/main/189Cloud-Checkin.py)
 
