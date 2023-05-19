@@ -3,6 +3,7 @@ import json
 import datetime
 import time
 import threading
+import pytz
 
 # 定义全局变量
 url = ""
@@ -10,7 +11,6 @@ url = ""
 payload = json.dumps({
     
 })
-
 headers = {
     
 }
@@ -39,10 +39,14 @@ def run_script():
         request_count = int(input("请输入要发送的请求次数："))
         delay_time = float(input("请输入每个请求之间的延迟时间（毫秒）："))
 
-        current_time = datetime.datetime.now()
+        # 获取当前时间，并进行时区转换
+        current_time = datetime.datetime.now(pytz.timezone("Asia/Shanghai"))
         scheduled_time = input("请输入脚本的执行时间（格式为HH:MM:SS）：")
 
-        scheduled_datetime = datetime.datetime.combine(current_time.date(), datetime.datetime.strptime(scheduled_time, '%H:%M:%S').time())
+        # 将执行时间转换为北京时间
+        scheduled_datetime = datetime.datetime.strptime(scheduled_time, '%H:%M:%S').time()
+        scheduled_datetime = pytz.timezone("Asia/Shanghai").localize(datetime.datetime.combine(current_time.date(), scheduled_datetime))
+
         time_diff = (scheduled_datetime - current_time).total_seconds()
 
         if time_diff > 0:
@@ -51,7 +55,7 @@ def run_script():
                 minutes, seconds = divmod(int(time_diff), 60)
                 print(f"\r剩余时间：{minutes:02d}:{seconds:02d}", end="")
                 time.sleep(1)
-                current_time = datetime.datetime.now()
+                current_time = datetime.datetime.now(pytz.timezone("Asia/Shanghai"))
                 time_diff = (scheduled_datetime - current_time).total_seconds()
             print("\n开始执行脚本...")
         else:
@@ -62,10 +66,12 @@ def run_script():
     elif mode == 2:  # 多线程模式
         concurrent_count = int(input("请输入并发请求数："))
 
-        current_time = datetime.datetime.now()
+        current_time = datetime.datetime.now(pytz.timezone("Asia/Shanghai"))
         scheduled_time = input("请输入脚本的执行时间（格式为HH:MM:SS）：")
 
-        scheduled_datetime = datetime.datetime.combine(current_time.date(), datetime.datetime.strptime(scheduled_time, '%H:%M:%S').time())
+        scheduled_datetime = datetime.datetime.strptime(scheduled_time, '%H:%M:%S').time()
+        scheduled_datetime = pytz.timezone("Asia/Shanghai").localize(datetime.datetime.combine(current_time.date(), scheduled_datetime))
+
         time_diff = (scheduled_datetime - current_time).total_seconds()
 
         if time_diff > 0:
@@ -74,7 +80,7 @@ def run_script():
                 minutes, seconds = divmod(int(time_diff), 60)
                 print(f"\r剩余时间：{minutes:02d}:{seconds:02d}", end="")
                 time.sleep(1)
-                current_time = datetime.datetime.now()
+                current_time = datetime.datetime.now(pytz.timezone("Asia/Shanghai"))
                 time_diff = (scheduled_datetime - current_time).total_seconds()
             print("\n开始执行脚本...")
         else:
