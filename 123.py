@@ -5,18 +5,18 @@ import time
 import threading
 
 # 定义全局变量
-URL = ""
+url = ""
 
-PAYLOAD = {
+payload = json.dumps({
     
-}
+})
 
-HEADERS = {
+headers = {
     
 }
 
 def send_post_request():
-    response = requests.post(URL, headers=HEADERS, data=json.dumps(PAYLOAD))
+    response = requests.post(url, headers=headers, data=payload)
     return response.text
 
 def send_requests(request_count, delay_time=0):
