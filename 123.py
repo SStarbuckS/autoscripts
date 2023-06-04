@@ -11,12 +11,13 @@ url = ""
 payload = json.dumps({
     
 })
+
 headers = {
     
 }
 
 def send_post_request():
-    response = requests.post(url, headers=headers, data=payload)
+    response = requests.post(url, headers=HEADERS, data=payload)
     return response.text
 
 def send_requests(request_count, delay_time=0):
@@ -33,17 +34,15 @@ def send_requests(request_count, delay_time=0):
         time.sleep(delay_time / 1000)  # 延迟指定时间（毫秒转换为秒）
 
 def run_script():
-    mode = int(input("请选择模式（1 - 单线程模式，2 - 多线程模式）："))
+    mode = int(input("请选择模式（1 - 单线程模式，2 - 多线程模式，3 - 立即执行模式）："))
 
     if mode == 1:  # 单线程模式
         request_count = int(input("请输入要发送的请求次数："))
         delay_time = float(input("请输入每个请求之间的延迟时间（毫秒）："))
 
-        # 获取当前时间，并进行时区转换
         current_time = datetime.datetime.now(pytz.timezone("Asia/Shanghai"))
         scheduled_time = input("请输入脚本的执行时间（格式为HH:MM:SS）：")
 
-        # 将执行时间转换为北京时间
         scheduled_datetime = datetime.datetime.strptime(scheduled_time, '%H:%M:%S').time()
         scheduled_datetime = pytz.timezone("Asia/Shanghai").localize(datetime.datetime.combine(current_time.date(), scheduled_datetime))
 
@@ -94,6 +93,9 @@ def run_script():
 
         for thread in threads:
             thread.join()
+
+    elif mode == 3:  # 立即执行模式
+        send_requests(1)
 
     else:
         print("无效的模式选择！")
