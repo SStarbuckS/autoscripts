@@ -17,7 +17,7 @@ headers = {
 }
 
 def send_post_request():
-    response = requests.post(url, headers=HEADERS, data=payload)
+    response = requests.post(url, headers=headers, data=payload)
     return response.text
 
 def send_requests(request_count, delay_time=0):
