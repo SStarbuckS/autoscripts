@@ -4,26 +4,33 @@ import datetime
 import time
 import threading
 import pytz
+import re
 
 # 定义全局变量
+qurl = "https://promotion.waimai.meituan.com/lottery/limitcouponcomponent/info?couponReferIds="
+
 url = ""
 
 payload = json.dumps({
-    
+
 })
 
 headers = {
-    
+
 }
 
-def send_post_request():
+def send_get_request(url):
+    response = requests.get(url, headers=headers)
+    return response.text
+
+def send_post_request(url):
     response = requests.post(url, headers=headers, data=payload)
     return response.text
 
 def send_requests(request_count, delay_time=0):
     for i in range(request_count):
         start_time = time.time()  # 记录请求开始时间
-        response_text = send_post_request()
+        response_text = send_post_request(url)
         end_time = time.time()  # 记录请求结束时间
         
         # 输出日志
@@ -34,68 +41,93 @@ def send_requests(request_count, delay_time=0):
         time.sleep(delay_time / 1000)  # 延迟指定时间（毫秒转换为秒）
 
 def run_script():
-    mode = int(input("请选择模式（1 - 单线程模式，2 - 多线程模式，3 - 立即执行模式）："))
+    mode = int(input("请选择模式（1 - 抢券模式，2 - 正常模式）："))
 
-    if mode == 1:  # 单线程模式
-        request_count = int(input("请输入要发送的请求次数："))
-        delay_time = float(input("请输入每个请求之间的延迟时间（毫秒）："))
+    if mode == 1:  # 抢券模式
+        # 构建请求的 URL
+        coupon_refer_id = re.search(r'couponReferId=(.*?)(&|$)', url).group(1)
+        qurl_with_coupon_id = qurl + coupon_refer_id
 
-        current_time = datetime.datetime.now(pytz.timezone("Asia/Shanghai"))
-        scheduled_time = input("请输入脚本的执行时间（格式为HH:MM:SS）：")
+        # GET请求获取数据
+        response_text = send_get_request(qurl_with_coupon_id)
+        print(f"GET请求完成 - 响应内容：{response_text}")
+        
+        print("等待2秒后继续执行...")
+        time.sleep(2)  # 添加2秒延迟
+        
+        # POST请求执行原始请求
+        response_text = send_post_request(url)
+        print(f"POST请求完成 - 响应内容：{response_text}")
 
-        scheduled_datetime = datetime.datetime.strptime(scheduled_time, '%H:%M:%S').time()
-        scheduled_datetime = pytz.timezone("Asia/Shanghai").localize(datetime.datetime.combine(current_time.date(), scheduled_datetime))
+        # 跳转到模式2
+        mode = 2
 
-        time_diff = (scheduled_datetime - current_time).total_seconds()
+    if mode == 2:  # 正常模式
+        mode = int(input("请选择模式（3 - 单线程模式，4 - 多线程模式，5 - 立即执行模式）："))
 
-        if time_diff > 0:
-            print(f"等待 {time_diff:.0f} 秒后开始执行脚本...")
-            while time_diff > 0:
-                minutes, seconds = divmod(int(time_diff), 60)
-                print(f"\r剩余时间：{minutes:02d}:{seconds:02d}", end="")
-                time.sleep(1)
-                current_time = datetime.datetime.now(pytz.timezone("Asia/Shanghai"))
-                time_diff = (scheduled_datetime - current_time).total_seconds()
-            print("\n开始执行脚本...")
+        if mode == 3:  # 单线程模式
+            request_count = int(input("请输入要发送的请求次数："))
+            delay_time = float(input("请输入每个请求之间的延迟时间（毫秒）："))
+
+            current_time = datetime.datetime.now(pytz.timezone("Asia/Shanghai"))
+            scheduled_time = input("请输入脚本的执行时间（格式为HH:MM:SS）：")
+
+            scheduled_datetime = datetime.datetime.strptime(scheduled_time, '%H:%M:%S').time()
+            scheduled_datetime = pytz.timezone("Asia/Shanghai").localize(datetime.datetime.combine(current_time.date(), scheduled_datetime))
+
+            time_diff = (scheduled_datetime - current_time).total_seconds()
+
+            if time_diff > 0:
+                print(f"等待 {time_diff:.0f} 秒后开始执行脚本...")
+                while time_diff > 0:
+                    minutes, seconds = divmod(int(time_diff), 60)
+                    print(f"\r剩余时间：{minutes:02d}:{seconds:02d}", end="")
+                    time.sleep(1)
+                    current_time = datetime.datetime.now(pytz.timezone("Asia/Shanghai"))
+                    time_diff = (scheduled_datetime - current_time).total_seconds()
+                print("\n开始执行脚本...")
+            else:
+                print("指定的执行时间已过，立即开始执行脚本")
+
+            send_requests(request_count, delay_time)
+
+        elif mode == 4:  # 多线程模式
+            concurrent_count = int(input("请输入并发请求数："))
+
+            current_time = datetime.datetime.now(pytz.timezone("Asia/Shanghai"))
+            scheduled_time = input("请输入脚本的执行时间（格式为HH:MM:SS）：")
+
+            scheduled_datetime = datetime.datetime.strptime(scheduled_time, '%H:%M:%S').time()
+            scheduled_datetime = pytz.timezone("Asia/Shanghai").localize(datetime.datetime.combine(current_time.date(), scheduled_datetime))
+
+            time_diff = (scheduled_datetime - current_time).total_seconds()
+
+            if time_diff > 0:
+                print(f"等待 {time_diff:.0f} 秒后开始执行脚本...")
+                while time_diff > 0:
+                    minutes, seconds = divmod(int(time_diff), 60)
+                    print(f"\r剩余时间：{minutes:02d}:{seconds:02d}", end="")
+                    time.sleep(1)
+                    current_time = datetime.datetime.now(pytz.timezone("Asia/Shanghai"))
+                    time_diff = (scheduled_datetime - current_time).total_seconds()
+                print("\n开始执行脚本...")
+            else:
+                print("指定的执行时间已过，立即开始执行脚本")
+
+            threads = []
+            for _ in range(concurrent_count):
+                thread = threading.Thread(target=send_requests, args=(1,))
+                threads.append(thread)
+                thread.start()
+
+            for thread in threads:
+                thread.join()
+
+        elif mode == 5:  # 立即执行模式
+            send_requests(1)
+
         else:
-            print("指定的执行时间已过，立即开始执行脚本")
-
-        send_requests(request_count, delay_time)
-
-    elif mode == 2:  # 多线程模式
-        concurrent_count = int(input("请输入并发请求数："))
-
-        current_time = datetime.datetime.now(pytz.timezone("Asia/Shanghai"))
-        scheduled_time = input("请输入脚本的执行时间（格式为HH:MM:SS）：")
-
-        scheduled_datetime = datetime.datetime.strptime(scheduled_time, '%H:%M:%S').time()
-        scheduled_datetime = pytz.timezone("Asia/Shanghai").localize(datetime.datetime.combine(current_time.date(), scheduled_datetime))
-
-        time_diff = (scheduled_datetime - current_time).total_seconds()
-
-        if time_diff > 0:
-            print(f"等待 {time_diff:.0f} 秒后开始执行脚本...")
-            while time_diff > 0:
-                minutes, seconds = divmod(int(time_diff), 60)
-                print(f"\r剩余时间：{minutes:02d}:{seconds:02d}", end="")
-                time.sleep(1)
-                current_time = datetime.datetime.now(pytz.timezone("Asia/Shanghai"))
-                time_diff = (scheduled_datetime - current_time).total_seconds()
-            print("\n开始执行脚本...")
-        else:
-            print("指定的执行时间已过，立即开始执行脚本")
-
-        threads = []
-        for _ in range(concurrent_count):
-            thread = threading.Thread(target=send_requests, args=(1,))
-            threads.append(thread)
-            thread.start()
-
-        for thread in threads:
-            thread.join()
-
-    elif mode == 3:  # 立即执行模式
-        send_requests(1)
+            print("无效的模式选择！")
 
     else:
         print("无效的模式选择！")
