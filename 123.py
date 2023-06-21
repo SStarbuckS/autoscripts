@@ -6,27 +6,44 @@ import threading
 import pytz
 import re
 
-# 定义全局变量
 qurl = "https://promotion.waimai.meituan.com/lottery/limitcouponcomponent/info?couponReferIds="
+# 从cURL命令中提取URL
+def extract_url(curl_command):
+    url_match = re.search(r"curl '(.*?)'", curl_command)
+    if url_match:
+        return url_match.group(1)
+    else:
+        return None
 
-url = ""
+# 从cURL命令中提取请求体
+def extract_payload(curl_command):
+    payload_match = re.search(r"--data-raw '(.*?)'", curl_command)
+    if payload_match:
+        return payload_match.group(1)
+    else:
+        return None
 
-payload = json.dumps({
+# 从cURL命令中提取请求头
+def extract_headers(curl_command):
+    headers_match = re.findall(r"-H '(.*?)'", curl_command)
+    headers = {}
+    for header in headers_match:
+        header_parts = header.split(': ')
+        if len(header_parts) == 2:
+            headers[header_parts[0]] = header_parts[1]
+    return headers
 
-})
-
-headers = {
-
-}
-
+# 发送GET请求
 def send_get_request(url):
     response = requests.get(url, headers=headers)
     return response.text
 
+# 发送POST请求
 def send_post_request(url):
     response = requests.post(url, headers=headers, data=payload)
     return response.text
 
+# 发送请求并输出日志
 def send_requests(request_count, delay_time=0):
     for i in range(request_count):
         start_time = time.time()  # 记录请求开始时间
@@ -40,7 +57,27 @@ def send_requests(request_count, delay_time=0):
         
         time.sleep(delay_time / 1000)  # 延迟指定时间（毫秒转换为秒）
 
+# 从'cURL.txt'文件中提取连接格式并更新全局变量
+def extract_curl_data(curl_file):
+    with open(curl_file, 'r') as file:
+        curl_command = file.read().replace('\n', ' ')
+
+    global url, payload, headers
+    url = extract_url(curl_command)
+    payload = extract_payload(curl_command)
+    headers = extract_headers(curl_command)
+
+    # 打印提取的连接格式
+    print("URL:", url)
+    print("Payload:", payload)
+    print("Headers:", headers)
+
+# 主程序入口
 def run_script():
+    # 提取连接格式并更新全局变量
+    curl_file = 'cURL.txt'
+    extract_curl_data(curl_file)
+
     mode = int(input("请选择模式（1 - 抢券模式，2 - 正常模式）："))
 
     if mode == 1:  # 抢券模式
