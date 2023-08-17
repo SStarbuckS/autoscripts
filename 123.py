@@ -7,6 +7,10 @@ import pytz
 import re
 
 qurl = "https://promotion.waimai.meituan.com/lottery/limitcouponcomponent/info?couponReferIds="
+
+# 添加全局变量 leadTime
+leadTime = 500  # 提前时间，单位毫秒
+
 # 从cURL命令中提取URL
 def extract_url(curl_command):
     url_match = re.search(r"curl '(.*?)'", curl_command)
@@ -38,21 +42,30 @@ def send_get_request(url):
     response = requests.get(url, headers=headers)
     return response.text
 
-# 发送POST请求
+# 发送POST请求并提取msg字段，若包含"已领取"、"来晚了"、"异常"则终止程序
 def send_post_request(url):
     response = requests.post(url, headers=headers, data=payload)
-    return response.text
+    try:
+        json_response = response.json()
+        msg = json_response.get("msg", None)
+        if msg and ("已领取" in msg or "来晚了" in msg or "异常" in msg or "重试" in msg):
+            print(f"程序终止 - 响应内容：{msg}")
+            exit(1)  # 退出程序，返回非零状态码表示异常终止
+        return msg
+    except Exception as e:
+        print("无法解析响应数据：", e)
+        return None
 
 # 发送请求并输出日志
 def send_requests(request_count, delay_time=0):
     for i in range(request_count):
         start_time = time.time()  # 记录请求开始时间
-        response_text = send_post_request(url)
+        msg = send_post_request(url)
         end_time = time.time()  # 记录请求结束时间
         
         # 输出日志
         current_datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-        log = f"[{current_datetime}] - 请求 {i+1}/{request_count} - 响应时间：{end_time - start_time:.3f}秒 - 响应内容：{response_text}"
+        log = f"[{current_datetime}] - 请求 {i+1}/{request_count} - 响应时间：{end_time - start_time:.3f}秒 - 响应内容：{msg}"
         print(log)
         
         time.sleep(delay_time / 1000)  # 延迟指定时间（毫秒转换为秒）
@@ -68,9 +81,9 @@ def extract_curl_data(curl_file):
     headers = extract_headers(curl_command)
 
     # 打印提取的连接格式
-    print("URL:", url)
-    print("Payload:", payload)
-    print("Headers:", headers)
+    #print("URL:", url)
+    #print("Payload:", payload)
+    #print("Headers:", headers)
 
 # 主程序入口
 def run_script():
@@ -93,8 +106,8 @@ def run_script():
         time.sleep(2)  # 添加2秒延迟
         
         # POST请求执行原始请求
-        response_text = send_post_request(url)
-        print(f"POST请求完成 - 响应内容：{response_text}")
+        msg = send_post_request(url)
+        print(f"POST请求完成 - 响应内容：{msg}")
 
         # 跳转到模式2
         mode = 2
@@ -112,7 +125,7 @@ def run_script():
             scheduled_datetime = datetime.datetime.strptime(scheduled_time, '%H:%M:%S').time()
             scheduled_datetime = pytz.timezone("Asia/Shanghai").localize(datetime.datetime.combine(current_time.date(), scheduled_datetime))
 
-            time_diff = (scheduled_datetime - current_time).total_seconds()
+            time_diff = (scheduled_datetime - current_time).total_seconds() - (leadTime / 1000)  # 调整执行时间
 
             if time_diff > 0:
                 print(f"等待 {time_diff:.0f} 秒后开始执行脚本...")
@@ -121,7 +134,7 @@ def run_script():
                     print(f"\r剩余时间：{minutes:02d}:{seconds:02d}", end="")
                     time.sleep(1)
                     current_time = datetime.datetime.now(pytz.timezone("Asia/Shanghai"))
-                    time_diff = (scheduled_datetime - current_time).total_seconds()
+                    time_diff = (scheduled_datetime - current_time).total_seconds() - (leadTime / 1000)  # 调整执行时间
                 print("\n开始执行脚本...")
             else:
                 print("指定的执行时间已过，立即开始执行脚本")
@@ -137,7 +150,7 @@ def run_script():
             scheduled_datetime = datetime.datetime.strptime(scheduled_time, '%H:%M:%S').time()
             scheduled_datetime = pytz.timezone("Asia/Shanghai").localize(datetime.datetime.combine(current_time.date(), scheduled_datetime))
 
-            time_diff = (scheduled_datetime - current_time).total_seconds()
+            time_diff = (scheduled_datetime - current_time).total_seconds() - (leadTime / 1000)  # 调整执行时间
 
             if time_diff > 0:
                 print(f"等待 {time_diff:.0f} 秒后开始执行脚本...")
@@ -146,7 +159,7 @@ def run_script():
                     print(f"\r剩余时间：{minutes:02d}:{seconds:02d}", end="")
                     time.sleep(1)
                     current_time = datetime.datetime.now(pytz.timezone("Asia/Shanghai"))
-                    time_diff = (scheduled_datetime - current_time).total_seconds()
+                    time_diff = (scheduled_datetime - current_time).total_seconds() - (leadTime / 1000)  # 调整执行时间
                 print("\n开始执行脚本...")
             else:
                 print("指定的执行时间已过，立即开始执行脚本")
