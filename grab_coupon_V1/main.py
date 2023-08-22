@@ -104,22 +104,29 @@ def send_post_request():
 def prompt_execution_time():
     execution_time = input("请输入执行时间（hh:mm:ss）：")
     try:
-        execution_time_obj = datetime.strptime(execution_time, '%H:%M:%S')
-        grab_time_obj = execution_time_obj - timedelta(milliseconds=advance_time_ms)
-        post_time_obj = execution_time_obj - timedelta(milliseconds=lead_time_ms)
+        execution_time_obj = datetime.strptime(execution_time, '%H:%M:%S').time()
+        print(f"execution_time_obj：{execution_time_obj}")
+        
+        grab_time_obj = (datetime.combine(datetime.today(), execution_time_obj) - timedelta(milliseconds=advance_time_ms)).time()
+        post_time_obj = (datetime.combine(datetime.today(), execution_time_obj) - timedelta(milliseconds=lead_time_ms)).time()
 
+        print(f"grab_time_obj：{grab_time_obj}")
+        print(f"post_time_obj：{post_time_obj}")
+        
+        grab_executed = False  # 增加一个标志变量来跟踪是否已执行 grab_coupon()
         while True:
-            current_time = datetime.now().strftime('%H:%M:%S')
+            current_time = datetime.now().time()
 
-            if current_time == grab_time_obj.strftime('%H:%M:%S'):
+            if current_time >= grab_time_obj and not grab_executed:
                 grab_coupon()
+                grab_executed = True  # 设置标志为 True，表示已经执行过 grab_coupon()
 
-            if current_time == post_time_obj.strftime('%H:%M:%S'):
+            if current_time >= post_time_obj:
                 send_post_request()
                 break
 
-            time_until_grab = (grab_time_obj - datetime.strptime(current_time, '%H:%M:%S')).total_seconds()
-            time_until_post = (post_time_obj - datetime.strptime(current_time, '%H:%M:%S')).total_seconds()
+            time_until_grab = (datetime.combine(datetime.today(), grab_time_obj) - datetime.combine(datetime.today(), current_time)).total_seconds()
+            time_until_post = (datetime.combine(datetime.today(), post_time_obj) - datetime.combine(datetime.today(), current_time)).total_seconds()
 
             output = f"距离 grab_coupon 执行还有 {int(time_until_grab)} 秒 | 距离 send_post_request 执行还有 {int(time_until_post)} 秒{' ' * 20}"
             print(output, end='\r')
@@ -136,22 +143,29 @@ def extractExecutionTimeFromTextFile():
             execution_time_str = config_data.get('startTime', '00:00:00')
             print(f"已从配置文件中提取执行时间：{execution_time_str}")
             
-            execution_time = datetime.strptime(execution_time_str, '%H:%M:%S')
-            grab_time_obj = execution_time - timedelta(milliseconds=advance_time_ms)
-            post_time_obj = execution_time - timedelta(milliseconds=lead_time_ms)
+            execution_time_obj = datetime.strptime(execution_time_str, '%H:%M:%S').time()
+            print(f"execution_time_obj：{execution_time_obj}")
+        
+            grab_time_obj = (datetime.combine(datetime.today(), execution_time_obj) - timedelta(milliseconds=advance_time_ms)).time()
+            post_time_obj = (datetime.combine(datetime.today(), execution_time_obj) - timedelta(milliseconds=lead_time_ms)).time()
 
+            print(f"grab_time_obj：{grab_time_obj}")
+            print(f"post_time_obj：{post_time_obj}")
+
+            grab_executed = False  # 增加一个标志变量来跟踪是否已执行 grab_coupon()
             while True:
-                current_time = datetime.now().strftime('%H:%M:%S')
+                current_time = datetime.now().time()
 
-                if current_time == grab_time_obj.strftime('%H:%M:%S'):
+                if current_time >= grab_time_obj and not grab_executed:
                     grab_coupon()
+                    grab_executed = True  # 设置标志为 True，表示已经执行过 grab_coupon()
 
-                if current_time == post_time_obj.strftime('%H:%M:%S'):
+                if current_time >= post_time_obj:
                     send_post_request()
                     break
 
-                time_until_grab = (grab_time_obj - datetime.strptime(current_time, '%H:%M:%S')).total_seconds()
-                time_until_post = (post_time_obj - datetime.strptime(current_time, '%H:%M:%S')).total_seconds()
+                time_until_grab = (datetime.combine(datetime.today(), grab_time_obj) - datetime.combine(datetime.today(), current_time)).total_seconds()
+                time_until_post = (datetime.combine(datetime.today(), post_time_obj) - datetime.combine(datetime.today(), current_time)).total_seconds()
 
                 output = f"距离 grab_coupon 执行还有 {int(time_until_grab)} 秒 | 距离 send_post_request 执行还有 {int(time_until_post)} 秒{' ' * 20}"
                 print(output, end='\r')
