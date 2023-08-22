@@ -121,7 +121,8 @@ def prompt_execution_time():
             time_until_grab = (grab_time_obj - datetime.strptime(current_time, '%H:%M:%S')).total_seconds()
             time_until_post = (post_time_obj - datetime.strptime(current_time, '%H:%M:%S')).total_seconds()
 
-            print(f"距离 grab_coupon 执行还有 {int(time_until_grab)} 秒 | 距离 send_post_request 执行还有 {int(time_until_post)} 秒{' ' * 20}", end='\r')
+            output = f"距离 grab_coupon 执行还有 {int(time_until_grab)} 秒 | 距离 send_post_request 执行还有 {int(time_until_post)} 秒{' ' * 20}"
+            print(output, end='\r')
 
             time.sleep(0.1)
     except ValueError:
@@ -152,7 +153,8 @@ def extractExecutionTimeFromTextFile():
                 time_until_grab = (grab_time_obj - datetime.strptime(current_time, '%H:%M:%S')).total_seconds()
                 time_until_post = (post_time_obj - datetime.strptime(current_time, '%H:%M:%S')).total_seconds()
 
-                print(f"距离 grab_coupon 执行还有 {int(time_until_grab)} 秒 | 距离 send_post_request 执行还有 {int(time_until_post)} 秒{' ' * 20}", end='\r')
+                output = f"距离 grab_coupon 执行还有 {int(time_until_grab)} 秒 | 距离 send_post_request 执行还有 {int(time_until_post)} 秒{' ' * 20}"
+                print(output, end='\r')
 
                 time.sleep(0.1)
     except FileNotFoundError:
