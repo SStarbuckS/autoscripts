@@ -9,7 +9,7 @@ function readCouponSettings() {
 
 // 获取 coupon_settings.json 中的配置
 const couponSettings = readCouponSettings();
-const { mt_url, loopCount, advanceTime, leadTime, delaytime, startTime } = couponSettings;
+const { mt_url, loopCount, advanceTime, leadTime, delaytime, startTime, keyToExtract } = couponSettings;
 
 // 获取当前时间的格式化字符串
 function getCurrentTime() {
@@ -113,6 +113,9 @@ async function executeAxiosRequest(accountData) {
         // 使用axios创建Promise并发送请求
         const response = await axios.post(url, body, { headers });
 
+        // 提取配置文件中指定的关键字段
+        const extractedData = keyToExtract ? response.data[keyToExtract] : response.data;
+        
         //lastResponse = response; // 更新最后一次的响应
 
         const endTime = Date.now(); // 记录结束时间
@@ -120,16 +123,16 @@ async function executeAxiosRequest(accountData) {
         const formattedResponseTime = Math.round(responseTime); // 四舍五入响应时间为整数
 
         // 将响应数据转换为字符串以便搜索关键词
-        const responseDataString = JSON.stringify(response.data.msg);
+        const responseDataString = JSON.stringify(extractedData);
 
         // 搜索关键词并终止线程
         if (responseDataString.includes("抢券成功") || responseDataString.includes("异常") || responseDataString.includes("网络") || responseDataString.includes("来晚了")) {
-          console.error(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求，响应时间: ${formattedResponseTime} ms - 响应内容:`, response.data.msg);
+          console.error(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求，响应时间: ${formattedResponseTime} ms - 响应内容:`, extractedData);
           console.error(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求检测到预设错误，停止此账户线程`);
           break; // 终止当前账户的线程
         }
 
-        console.log(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求，响应时间: ${formattedResponseTime} ms 响应内容:-`, response.data.msg);
+        console.log(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求，响应时间: ${formattedResponseTime} ms 响应内容:-`, extractedData);
 
         const delayTime = parseInt(delaytime); // 从配置中获取延迟时间
         if (!isNaN(delayTime) && delayTime > 0 && i < loopCount - 1) {
