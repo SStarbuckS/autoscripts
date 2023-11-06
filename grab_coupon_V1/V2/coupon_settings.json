@@ -5,5 +5,7 @@
   "advanceTime": "10000",
   "leadTime": "360",
   "delaytime": "0",
-  "keyToExtract": "message"
+  "keyToExtract": "message",
+  "webhookUrl": "",
+  "webhookTitle": "Title"
 }
