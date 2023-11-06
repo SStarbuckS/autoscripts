@@ -162,18 +162,18 @@ async function executeAxiosRequest(accountData) {
   console.log('最后一次响应数据：');
   console.log(logText);
 
+  // 构造推送的消息
+  const message = `${webhookTitle}\n\n${logText}`;
+
   // 检查 webhookUrl 是否为空
   if (webhookUrl) {
-  // 构建完整的 webhook URL
-  const fullWebhookUrl = `${webhookUrl}?title=${encodeURIComponent(webhookTitle)}&msg=${encodeURIComponent(logText)}`;
-
   // 发送 POST 请求到 Webhook 接口
-  axios.post(fullWebhookUrl)
+  axios.post(webhookUrl + encodeURIComponent(message))
     .then(response => {
-      console.log('日志已成功推送到Webhook接口。');
+      console.log('日志已成功推送到 Webhook 接口。');
     })
     .catch(error => {
-      console.error('推送日志到Webhook接口时出错：', error);
+      console.error('推送日志到 Webhook 接口时出错：', error);
     });
 } else {
   console.log('webhookUrl 为空，不执行推送操作。');
