@@ -127,12 +127,12 @@ async function executeAxiosRequest(accountData) {
 
         // 搜索关键词并终止线程
         if (responseDataString.includes("抢券成功") || responseDataString.includes("异常") || responseDataString.includes("网络") || responseDataString.includes("来晚了")) {
-          console.error(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求，响应时间: ${formattedResponseTime} ms - 响应内容:`, extractedData);
+          console.error(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求，响应时间: ${formattedResponseTime} ms - 响应内容:`, responseDataString);
           console.error(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求检测到预设错误，停止此账户线程`);
           break; // 终止当前账户的线程
         }
 
-        console.log(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求，响应时间: ${formattedResponseTime} ms 响应内容:-`, extractedData);
+        console.log(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求，响应时间: ${formattedResponseTime} ms 响应内容:-`, responseDataString);
 
         const delayTime = parseInt(delaytime); // 从配置中获取延迟时间
         if (!isNaN(delayTime) && delayTime > 0 && i < loopCount - 1) {
