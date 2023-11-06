@@ -170,7 +170,7 @@ async function executeAxiosRequest(accountData) {
   // 发送 POST 请求到 Webhook 接口
   axios.post(webhookUrl + encodeURIComponent(message))
     .then(response => {
-      console.log('日志已成功推送到 Webhook 接口。');
+      console.log('日志已成功推送到 Webhook 接口。', response.data);
     })
     .catch(error => {
       console.error('推送日志到 Webhook 接口时出错：', error);
