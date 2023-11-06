@@ -9,7 +9,7 @@ function readCouponSettings() {
 
 // 获取 coupon_settings.json 中的配置
 const couponSettings = readCouponSettings();
-const { mt_url, loopCount, advanceTime, leadTime, delaytime, startTime, keyToExtract } = couponSettings;
+const { mt_url, loopCount, advanceTime, leadTime, delaytime, startTime, keyToExtract, webhookUrl, webhookTitle } = couponSettings;
 
 // 获取当前时间的格式化字符串
 function getCurrentTime() {
@@ -25,7 +25,7 @@ function processCurlFiles() {
   const accountData = []; // 存储所有账户数据的数组
 
   files.forEach((file) => {
-    if (file.startsWith('curl_') && file.endsWith('.txt')) {
+    if (file.endsWith('.txt')) {
       const accountName = file.replace('.txt', '');
       const fileContent = fs.readFileSync(file, 'utf-8');
       const { url, headers, body } = extractCurlData(fileContent);
@@ -102,6 +102,8 @@ async function executeGetAndPost(accountData) {
 // 函数executeAxiosRequest：使用账户数据构建多次POST请求，并记录响应时间
 async function executeAxiosRequest(accountData) {
 
+  const lastResponses = []; // 用于存储最后一次响应数据
+  
   // 创建一个Promise数组，用于存储并行发送的请求
   const promises = accountData.map(async ({ accountName, url, headers, body }) => {
     //let lastResponse = null; // 用于存储最后一次的响应
@@ -124,6 +126,9 @@ async function executeAxiosRequest(accountData) {
 
         // 将响应数据转换为字符串以便搜索关键词
         const responseDataString = JSON.stringify(extractedData);
+        
+        // 存储最后一次响应数据
+        lastResponses[accountName] = responseDataString;
 
         // 搜索关键词并终止线程
         if (responseDataString.includes("抢券成功") || responseDataString.includes("异常") || responseDataString.includes("网络") || responseDataString.includes("来晚了")) {
@@ -147,6 +152,33 @@ async function executeAxiosRequest(accountData) {
 
   // 使用Promise.all并行执行所有账户的请求
   await Promise.all(promises);
+  
+  // 整理最后一次响应数据为一个字符串
+  const logText = Object.entries(lastResponses)
+  .map(([accountName, responseDataString]) => `${accountName}: ${responseDataString}`)
+  .join('\r\n');
+  
+  // 输出最后一次响应数据
+  console.log('最后一次响应数据：');
+  console.log(logText);
+
+  // 检查 webhookUrl 是否为空
+  if (webhookUrl) {
+  // 构建完整的 webhook URL
+  const fullWebhookUrl = `${webhookUrl}?title=${encodeURIComponent(webhookTitle)}&msg=${encodeURIComponent(logText)}`;
+
+  // 发送 POST 请求到 Webhook 接口
+  axios.post(fullWebhookUrl)
+    .then(response => {
+      console.log('日志已成功推送到Webhook接口。');
+    })
+    .catch(error => {
+      console.error('推送日志到Webhook接口时出错：', error);
+    });
+} else {
+  console.log('webhookUrl 为空，不执行推送操作。');
+}
+
 }
 
 // 封装函数：某团模式
