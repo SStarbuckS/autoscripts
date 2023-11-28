@@ -12,6 +12,8 @@
 
 `keyToExtract`提取响应数据关键字符串，为空或不存在则全部输出
 
+`errorKeys`检测响应数据是否包含关键词，如果存在终止当前线程
+
 `webhookUrl`推送接口，为空不推送
 
 `webhookTitle`推送标题
