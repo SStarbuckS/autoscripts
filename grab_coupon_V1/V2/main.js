@@ -9,7 +9,7 @@ function readCouponSettings() {
 
 // 获取 coupon_settings.json 中的配置
 const couponSettings = readCouponSettings();
-const { mt_url, loopCount, advanceTime, leadTime, delaytime, startTime, keyToExtract, webhookUrl, webhookTitle } = couponSettings;
+const { mt_url, loopCount, advanceTime, leadTime, delaytime, startTime, errorKeys, keyToExtract, webhookUrl, webhookTitle } = couponSettings;
 
 // 获取当前时间的格式化字符串
 function getCurrentTime() {
@@ -131,11 +131,13 @@ async function executeAxiosRequest(accountData) {
         lastResponses[accountName] = responseDataString;
 
         // 搜索关键词并终止线程
-        if (responseDataString.includes("抢券成功") || responseDataString.includes("异常") || responseDataString.includes("网络") || responseDataString.includes("来晚了")) {
+        if (errorKeys.some(errorkey => responseDataString.includes(errorkey))) {
           console.error(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求，响应时间: ${formattedResponseTime} ms - 响应内容:`, responseDataString);
           console.error(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求检测到预设错误，停止此账户线程`);
-          break; // 终止当前账户的线程
+          // 终止当前账户的线程
+          break;
         }
+
 
         console.log(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求，响应时间: ${formattedResponseTime} ms 响应内容:-`, responseDataString);
 
