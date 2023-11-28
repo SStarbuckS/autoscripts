@@ -6,6 +6,7 @@
   "leadTime": "360",
   "delaytime": "0",
   "keyToExtract": "message",
+  "errorKeys": ["异常", "网络", "来晚了", "抢券成功", "已领取", "登录超时", "ok"],
   "webhookUrl": "",
   "webhookTitle": "Title"
 }
