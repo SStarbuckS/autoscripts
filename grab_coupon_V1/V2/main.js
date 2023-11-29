@@ -9,7 +9,7 @@ function readCouponSettings() {
 
 // 获取 coupon_settings.json 中的配置
 const couponSettings = readCouponSettings();
-const { mt_url, loopCount, advanceTime, leadTime, delaytime, startTime, errorKeys, keyToExtract, webhookUrl, webhookTitle } = couponSettings;
+const { mt_url, loopCount, advanceTime, leadTime, delaytime, startTime, keyToExtract, errorKeys, webhookUrl, webhookTitle } = couponSettings;
 
 // 获取当前时间的格式化字符串
 function getCurrentTime() {
@@ -155,10 +155,16 @@ async function executeAxiosRequest(accountData) {
   // 使用Promise.all并行执行所有账户的请求
   await Promise.all(promises);
   
+  // 调用推送函数
+  await processAndPushLog(lastResponses);
+}
+
+// 函数processAndPushLog：整理最后一次响应数据，并构建推送消息
+async function processAndPushLog(lastResponses) {
   // 整理最后一次响应数据为一个字符串
   const logText = Object.entries(lastResponses)
-  .map(([accountName, responseDataString]) => `${accountName}: ${responseDataString}`)
-  .join('\r\n');
+    .map(([accountName, responseDataString]) => `${accountName}: ${responseDataString}`)
+    .join('\r\n');
   
   // 输出最后一次响应数据
   console.log('最后一次响应数据：');
@@ -169,18 +175,16 @@ async function executeAxiosRequest(accountData) {
 
   // 检查 webhookUrl 是否为空
   if (webhookUrl) {
-  // 发送 POST 请求到 Webhook 接口
-  axios.post(webhookUrl + encodeURIComponent(message))
-    .then(response => {
+    // 发送 POST 请求到 Webhook 接口
+    try {
+      const response = await axios.post(webhookUrl + encodeURIComponent(message));
       console.log('日志已成功推送到 Webhook 接口。', response.data);
-    })
-    .catch(error => {
+    } catch (error) {
       console.error('推送日志到 Webhook 接口时出错：', error);
-    });
-} else {
-  console.log('webhookUrl 为空，不执行推送操作。');
-}
-
+    }
+  } else {
+    console.log('webhookUrl 为空，不执行推送操作。');
+  }
 }
 
 // 封装函数：某团模式
@@ -195,8 +199,8 @@ async function SendRequests() {
     await executeAxiosRequest(accountData);
 }
 
-// 新增函数：某团发包模式本地定时
-function MouTuan() {
+// 函数executeMode：用户的选择模式
+function executeMode(mode) {
     try {
         const timeParts = startTime.split(':');
         if (timeParts.length === 3) {
@@ -205,49 +209,18 @@ function MouTuan() {
             const seconds = parseInt(timeParts[2]);
             const currentTime = new Date();
             executionTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate(), hours, minutes, seconds).getTime();
-            console.log(getCurrentTime(), "当前模式为：某团发包");
+            console.log(getCurrentTime(), `当前模式为：${mode === 'MouTuan' ? '某团发包' : '通用发包'}`);
             console.log(getCurrentTime(), "执行时间已设置为", startTime);
             console.log(getCurrentTime(), "循环次数已设置为", loopCount);
-            console.log(getCurrentTime(), `某团链接将在设定时间提前 ${advanceTime} 毫秒执行，发包将在设定时间提前 ${leadTime} 毫秒执行`);
-            setTimeout(MouTuanSendRequests, executionTime - currentTime.getTime() - advanceTime);
-            setTimeout(SendRequests, executionTime - currentTime.getTime() - leadTime);
-
-            // 全局执行时间倒计时
-            const countdownInterval = setInterval(() => {
-                const remainingTime = Math.max(0, executionTime - Date.now());
-                const remainingSeconds = Math.floor(remainingTime / 1000);
-                process.stdout.clearLine();
-                process.stdout.cursorTo(0);
-                process.stdout.write("距离执行时间还有 " + remainingSeconds + " 秒");
-                if (remainingSeconds <= 0) {
-                    process.stdout.write("\n");
-                    clearInterval(countdownInterval);
-                }
-            }, 100);
-        } else {
-            console.error("时间格式不正确，请重新设置执行时间。");
-        }
-    } catch (error) {
-        console.error(getCurrentTime(), "读取或解析coupon_settings.json文件时出错：", error.message);
-    }
-}
-
-// 新增函数：通用发包模式本地定时
-function Standard() {
-    try {
-        const timeParts = startTime.split(':');
-        if (timeParts.length === 3) {
-            const hours = parseInt(timeParts[0]);
-            const minutes = parseInt(timeParts[1]);
-            const seconds = parseInt(timeParts[2]);
-            const currentTime = new Date();
-            executionTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate(), hours, minutes, seconds).getTime();
-            console.log(getCurrentTime(), "当前模式为：通用发包");
-            console.log(getCurrentTime(), "执行时间已设置为", startTime);
-            console.log(getCurrentTime(), "循环次数已设置为", loopCount);
-            console.log(getCurrentTime(), `发包将在设定时间提前 ${leadTime} 毫秒执行`);
-            //setTimeout(MouTuanSendRequests, executionTime - currentTime.getTime() - advanceTime);
-            setTimeout(SendRequests, executionTime - currentTime.getTime() - leadTime);
+            
+            if (mode === 'MouTuan') {
+                console.log(getCurrentTime(), `某团链接将在设定时间提前 ${advanceTime} 毫秒执行，发包将在设定时间提前 ${leadTime} 毫秒执行`);
+                setTimeout(MouTuanSendRequests, executionTime - currentTime.getTime() - advanceTime);
+                setTimeout(SendRequests, executionTime - currentTime.getTime() - leadTime);
+            } else if (mode === 'Standard') {
+                console.log(getCurrentTime(), `发包将在设定时间提前 ${leadTime} 毫秒执行`);
+                setTimeout(SendRequests, executionTime - currentTime.getTime() - leadTime);
+            }
 
             // 全局执行时间倒计时
             const countdownInterval = setInterval(() => {
@@ -281,11 +254,11 @@ function getExecutionTimeAndLoopCountFromUser() {
         switch (mode) {
             case '1':
                 // 执行模式1：某团发包
-                MouTuan();
+                executeMode('MouTuan');
                 break;
             case '2':
                 // 执行模式2：通用发包
-                Standard();
+                executeMode('Standard');
                 break;
             case '3':
                 // 执行模式3：某团测试
