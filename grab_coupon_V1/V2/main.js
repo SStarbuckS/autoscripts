@@ -115,8 +115,14 @@ async function executeAxiosRequest(accountData) {
         // 使用axios创建Promise并发送请求
         const response = await axios.post(url, body, { headers });
 
-        // 提取配置文件中指定的关键字段
-        const extractedData = response.data.hasOwnProperty(keyToExtract) ? response.data[keyToExtract] : response.data;
+        // 提取配置文件中指定的多个关键字段
+        let extractedData = response.data;
+        for (const key of keyToExtract) {
+          if (response.data.hasOwnProperty(key)) {
+            extractedData = response.data[key];
+            break;
+          }
+        }
         
         //lastResponse = response; // 更新最后一次的响应
 
