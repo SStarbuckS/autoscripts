@@ -27,3 +27,7 @@ JsBox, Node.js用户获取Cookie说明：
 * [恩山论坛签到](https://raw.githubusercontent.com/SStarbuckS/auto_scripts/main/checkIn_EnShan.py) [@BNDou](https://github.com/BNDou/Auto_Check_In)
 
 环境变量`COOKIE_ENSHAN`，网页登录 `https://www.right.com.cn/forum/` 按F12控制台`Network`Cookie值
+
+* [司机社签到](https://raw.githubusercontent.com/SStarbuckS/auto_scripts/main/sijishe.py)
+
+填写ua，cookie，webhook推送接口
