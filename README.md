@@ -30,4 +30,4 @@ JsBox, Node.js用户获取Cookie说明：
 
 * [司机社签到](https://raw.githubusercontent.com/SStarbuckS/autoscripts/main/sijishe.py)
 
-填写ua，cookie，webhook推送接口
+填写userid，ua，cookie，webhook值
