@@ -42,6 +42,7 @@ try:
             
             # 提取并输出各个元素的值
             elements_translation = {
+                'qiandaobtnnum': '签到排名',
                 'lxdays': '连续签到天数',
                 'lxlevel': '签到等级',
                 'lxreward': '积分奖励',
