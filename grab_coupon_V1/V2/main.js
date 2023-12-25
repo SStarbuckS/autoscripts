@@ -155,7 +155,7 @@ async function executeAxiosRequest(accountData) {
       } catch (error) {
         if (error.response) {
           // 输出捕获到的状态码
-          console.error(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求错误， ${error.response.status}`);
+          console.error(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求错误，${error.response.status}`);
         } else {
           // 如果没有response属性，输出全部错误信息
           console.error(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求错误:`, error);
