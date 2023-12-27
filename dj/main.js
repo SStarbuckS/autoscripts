@@ -11,8 +11,8 @@ function readAllConfig() {
 // 获取所有配置信息
 const allConfig = readAllConfig();
 
-// 获取 baseURL
-const baseURL = allConfig.urls.baseURL;
+// 获取URL信息
+const { baseURL, dataURL } = allConfig.urls;
 
 // 获取请求头信息
 const headers = allConfig.headers;
@@ -48,7 +48,7 @@ async function claimCoupons() {
 
       console.log(`${getLocalTime()} 抢券响应：${JSON.stringify(response.data)}，服务器响应时间：${serverResponseTime}ms`);
 
-      if (JSON.stringify(response.data).includes('not login') || JSON.stringify(response.data).includes('您来太晚了')) {
+      if (JSON.stringify(response.data).includes('not login') || JSON.stringify(response.data).includes('领取成功') || JSON.stringify(response.data).includes('您已经参加过此活动') || JSON.stringify(response.data).includes('此券已经被抢完了') || JSON.stringify(response.data).includes('活动已经结束了哟') || JSON.stringify(response.data).includes('没抢到') || JSON.stringify(response.data).includes('未登录')) {
         stopRequests = true;
       }
     }
@@ -63,7 +63,7 @@ async function fetchData() {
   let constructedURLCount = 0;
 
   try {
-    const response = await axios.get('http://127.0.0.1:5889/batchLog?count=6');
+    const response = await axios.get(dataURL);
     const responseData = response.data;
 
     if (Array.isArray(responseData) && responseData.length > 0) {
@@ -76,7 +76,7 @@ async function fetchData() {
 
       const urls = fetchData.split('\n').map(data => {
         constructedURLCount++;
-        const constructedURL = `${baseURL}${data}&client=wh5`;
+        const constructedURL = `${baseURL}${data}}&client=wh5`;
         console.log(`${getLocalTime()} 构建的链接：${constructedURL}`);
         return constructedURL;
       });
@@ -96,8 +96,8 @@ async function fetchData() {
   }
 }
 
-// 新增函数：某团发包模式本地定时
-function MouTuan() {
+// 函数：本地时间定时
+function DongJing() {
     try {
         const timeParts = taskTime.split(':');
         if (timeParts.length === 3) {
@@ -106,9 +106,9 @@ function MouTuan() {
             const seconds = parseInt(timeParts[2]);
             const currentTime = new Date();
             executionTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate(), hours, minutes, seconds).getTime();
-            console.log(getLocalTime(), "当前模式为：某团发包");
+            console.log(getLocalTime(), "Wel Come!");
             console.log(getLocalTime(), "执行时间已设置为", taskTime);
-            console.log(getLocalTime(), `某团链接将在设定时间提前 ${advanceTime} 毫秒执行，发包将在设定时间提前 ${leadTime} 毫秒执行`);
+            console.log(getLocalTime(), `签名链接将在设定时间提前 ${advanceTime} 毫秒执行，发包将在设定时间提前 ${leadTime} 毫秒执行`);
             setTimeout(fetchData, executionTime - currentTime.getTime() - advanceTime);
             setTimeout(claimCoupons, executionTime - currentTime.getTime() - leadTime);
 
@@ -128,8 +128,8 @@ function MouTuan() {
             console.error("时间格式不正确，请重新设置执行时间。");
         }
     } catch (error) {
-        console.error(getLocalTime(), "读取或解析coupon_settings.json文件时出错：", error.message);
+        console.error(getLocalTime(), "读取或解析config.ini文件时出错：", error.message);
     }
 }
 
-MouTuan();
+DongJing();
