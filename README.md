@@ -37,3 +37,5 @@ JsBox, Node.js用户获取Cookie说明：
 * [万达影院今日上映](https://raw.githubusercontent.com/SStarbuckS/autoscripts/main/wanda_hot_show.py)
 
 * [telegram签到打卡](https://raw.githubusercontent.com/SStarbuckS/autoscripts/main/tg_bot_qd.py)
+
+* [提取东京优惠券api信息](https://raw.githubusercontent.com/SStarbuckS/autoscripts/main/dj_link.py)
