@@ -43,12 +43,12 @@ function processCurlFiles() {
 
   // 提取请求URL、请求头和请求体
   function extractCurlData(curlCommand) {
-    const urlRegex = /curl '([^']+)'/;
+    const urlRegex = /curl(?:\s\S+)*\s(?:'([^']+)')|(?:-X\s\S+\s'([^']+)')/;
     const headerRegex = /-H '([^:]+): ([^']+)'/g;
-    const bodyRegex = /--data-raw '([^']+)'/;
+    const bodyRegex = /--data-(?:raw|binary) '([^']+)'/;
 
     const matchUrl = curlCommand.match(urlRegex);
-    const url = matchUrl ? matchUrl[1] : '';
+    const url = matchUrl ? (matchUrl[1] || matchUrl[2]) : '';
 
     const headers = {};
     let matchHeader;
@@ -84,11 +84,11 @@ async function executeGetAndPost(accountData) {
         console.log(`${getCurrentTime()} - 账户 ${accountName} GET请求响应:`, getResponse.data.msg);
 
         // 等待2秒
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        //await new Promise(resolve => setTimeout(resolve, 5000));
 
         // 再发送原始参数的POST请求
-        const postResponse = await axios.post(url, body, { headers });
-        console.log(`${getCurrentTime()} - 账户 ${accountName} POST请求响应:`, postResponse.data.msg);
+        //const postResponse = await axios.post(url, body, { headers });
+        //console.log(`${getCurrentTime()} - 账户 ${accountName} POST请求响应:`, postResponse.data.msg);
       } catch (error) {
         console.error(`${getCurrentTime()} - 账户 ${accountName} 错误:`, error);
       }
@@ -139,7 +139,7 @@ async function executeAxiosRequest(accountData) {
         // 搜索关键词并终止线程
         if (errorKeys.some(errorkey => responseDataString.includes(errorkey))) {
           console.error(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求，响应时间: ${formattedResponseTime} ms - 响应内容:`, responseDataString);
-          console.error(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求检测到预设错误，停止此账户线程`);
+          //console.error(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求检测到预设错误，停止此账户线程`);
           // 终止当前账户的线程
           break;
         }
@@ -157,7 +157,7 @@ async function executeAxiosRequest(accountData) {
           // 输出捕获到的状态码
           console.error(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求错误，${error.response.status}`);
         } else {
-          // 如果没有response属性，输出全部错误信息
+          // 如果没有response属性，输出通用的错误信息
           console.error(`${getCurrentTime()} - 账户 ${accountName}，第 ${i + 1} 次请求错误:`, error);
         }
       }
