@@ -43,6 +43,7 @@ def fetch_data(search_url, expected_price):
             print("商品标题:", title)
             print("商品链接:", url)
             print("当前价格:", price)
+            print("提醒价格:", expected_price)
             
             if price <= expected_price:
                 send_notification(title, url, price, expected_price)
