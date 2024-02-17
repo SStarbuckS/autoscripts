@@ -14,61 +14,57 @@ try:
 except Exception as err:
     print('%s\n加载通知服务失败~' % err)
 
-def get_product_info(product_url, expected_price_str):
-    base_url = "https://www.zhelink.com:8028/HistoricallyLowPrice/api/low_price/data?goods="
-    full_url = f"{base_url}{product_url}"
+# 假设这个函数用于发送微信推送消息
+def send_notification(title, url, price, expected_price):
+    title = "商品低价提醒"
+    content = f"商品名称：{title}\n商品链接：{url}\n当前价格：{price} 小于或等于预期价格 {expected_price}！"
+    send(title, content)
 
+def fetch_data(search_url, expected_price):
+    url = "https://www.gwdang.com/miniprogram/price_trend?from=miniprogram"
     headers = {
-        "Host": "www.zhelink.com:8028"
+        "Host": "www.gwdang.com",
+        "User-Agent": "Mozilla/5.0 (X11; U; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5839.211 Safari/537.36",
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+    payload = {
+        "search_url": search_url
     }
 
-    # 发送 GET 请求
-    response = requests.get(full_url, headers=headers)
-
-    # 检查请求是否成功
+    response = requests.post(url, headers=headers, data=payload)
+    
     if response.status_code == 200:
-        # 解析 JSON 数据
         data = response.json()
-
-        # 提取data字段中的JSON字符串
-        data_json_str = data.get("data", "")
-
-        # 再次解析JSON字符串
-        data_json = json.loads(data_json_str) if data_json_str else {}
-
-        # 提取需要的字段
-        current_price = data_json.get("currentPrice")
-        sp_name = data_json.get("spName")
-        lower_price = data_json.get("lowerPrice")
-
-        # 打印提取的信息（中文）
-        print("商品名称:", sp_name)
-        print("商品链接:", product_url)
-        print("当前价格:", current_price)
-        print("史低价格:", lower_price)
-        print("提醒价格:", expected_price_str)
-
-        # 比较当前价格和预期价格
-        if current_price and float(current_price) <= float(expected_price_str):
-            send_notification(sp_name, product_url, current_price, expected_price_str, lower_price)
-        
-        print("--------------------")
+        dp_info = data.get('dp_info')
+        if dp_info:
+            title = dp_info.get('title')
+            url = dp_info.get('url')
+            price = int(dp_info.get('price'))  # 将价格转换为整数以便比较
+            print("商品标题:", title)
+            print("商品链接:", url)
+            print("当前价格:", price)
+            
+            if price <= expected_price:
+                send_notification(title, url, price, expected_price)
+                print("已发送低价预警消息！")
+            else:
+                print("当前价格未达到预期价格，不发送低价预警消息。")
+        else:
+            print(f"无法从响应中提取商品标题和价格: {search_url}")
+            send('商品低价提醒', '出错了请检查！')
     else:
-        print(f"获取 {product_url} 数据失败。状态码:", response.status_code)
+        print(f"无法获取数据: {search_url}. 状态码:", response.status_code)
         send('商品低价提醒', '出错了请检查！')
 
-def send_notification(sp_name, product_url, current_price, expected_price_str, lower_price):
-        title = "商品低价提醒"
-        content = f"商品名称：{sp_name}\n商品链接：{product_url}\n当前价格：{current_price} 小于或等于预期价格 {expected_price_str}！\n历史最低价格参考：{lower_price}"
-        send(title, content)
+def main():
+    search_urls = [
+        {"url": "https://detail.tmall.com/item.htm?id=123", "expected_price": 20000},
+        # 添加更多链接和对应的预期价格
+    ]
 
-# 例子：多个商品链接和预期价格
-product_and_prices = [
-    {"url": "https://detail.tmall.com/item.htm?id=123", "expected_price": "100.00"},
-    # 添加更多商品链接和预期价格...
-]
+    for item in search_urls:
+        fetch_data(item["url"], item["expected_price"])
+        time.sleep(6)  # 添加延迟
 
-# 遍历商品链接并调用函数，添加延迟
-for item in product_and_prices:
-    get_product_info(item["url"], item["expected_price"])
-    time.sleep(6)  # 延迟6秒
+if __name__ == "__main__":
+    main()
