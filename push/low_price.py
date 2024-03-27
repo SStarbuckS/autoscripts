@@ -16,9 +16,8 @@ except Exception as err:
 
 # 假设这个函数用于发送微信推送消息
 def send_notification(title, url, price, expected_price):
-    title = "商品低价提醒"
     content = f"商品名称：{title}\n商品链接：{url}\n当前价格：{price} 小于或等于预期价格 {expected_price}！"
-    send(title, content)
+    send('商品低价提醒', content)
 
 def fetch_data(search_url, expected_price):
     url = "https://www.gwdang.com/miniprogram/price_trend?from=miniprogram"
