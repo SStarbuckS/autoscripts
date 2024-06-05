@@ -48,7 +48,7 @@ async function claimCoupons() {
 
       console.log(`${getLocalTime()} 抢券响应：${JSON.stringify(response.data)}，服务器响应时间：${serverResponseTime}ms`);
 
-      if (JSON.stringify(response.data).includes('not login') || JSON.stringify(response.data).includes('领取成功') || JSON.stringify(response.data).includes('您已经参加过此活动') || JSON.stringify(response.data).includes('此券已经被抢完了') || JSON.stringify(response.data).includes('活动已经结束了哟') || JSON.stringify(response.data).includes('没抢到') || JSON.stringify(response.data).includes('20:00')) {
+      if (JSON.stringify(response.data).includes('not login') || JSON.stringify(response.data).includes('领取成功') || JSON.stringify(response.data).includes('您已经参加过此活动') || JSON.stringify(response.data).includes('此券已经被抢完了') || JSON.stringify(response.data).includes('活动已经结束了哟') || JSON.stringify(response.data).includes('没抢到123') || JSON.stringify(response.data).includes('20:00')) {
         stopRequests = true;
       }
     }
@@ -76,7 +76,7 @@ async function fetchData() {
 
       const urls = fetchData.split('\n').map(data => {
         constructedURLCount++;
-        const constructedURL = `${baseURL}${data}}&client=wh5`;
+        const constructedURL = `${baseURL}${data}}`;
         console.log(`${getLocalTime()} 构建的链接：${constructedURL}`);
         return constructedURL;
       });
