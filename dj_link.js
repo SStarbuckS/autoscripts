@@ -12,7 +12,7 @@ rl.question('Please enter the target URL: ', (targetUrl) => {
   rl.close();
 
   const headers = {
-    'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
     'Host': 'prodev.m.jd.com'
   };
 
@@ -47,7 +47,7 @@ rl.question('Please enter the target URL: ', (targetUrl) => {
                       const args = coupon.args;
 
                       // 构建新的 URL
-                      const newUrl = `https://api.m.jd.com/client.action?functionId=newBabelAwardCollection&body={"activityId":"${activityId}","scene":"${scene}","args":"${args}"`;
+                      const newUrl = `https://api.m.jd.com/client.action?functionId=newBabelAwardCollection&client=wh5&body={"activityId":"${activityId}","scene":"${scene}","args":"${args}"}`;
 
                       // 输出新的 URL
                       console.log('New URL:', newUrl);
