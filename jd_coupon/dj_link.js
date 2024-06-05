@@ -47,7 +47,7 @@ rl.question('Please enter the target URL: ', (targetUrl) => {
                       const args = coupon.args;
 
                       // 构建新的 URL
-                      const newUrl = `https://api.m.jd.com/client.action?functionId=newBabelAwardCollection&client=wh5&body={"activityId":"${activityId}","scene":"${scene}","args":"${args}"},`;
+                      const newUrl = `https://api.m.jd.com/client.action?functionId=newBabelAwardCollection&client=wh5&body={"activityId":"${activityId}","scene":"${scene}","args":"${args}",`;
 
                       // 输出新的 URL
                       console.log('New URL:', newUrl);
