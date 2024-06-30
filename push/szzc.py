@@ -82,40 +82,6 @@ class HitchInfoFetcher:
 
         return count, result
 
-class HitchSearchApp:
-    def __init__(self):
-        self.fetcher = HitchInfoFetcher()
-
-    def run(self):
-        while True:
-            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            print("\r")
-            print(f"执行时间: {current_time}")
-
-            success, message = self.fetcher.fetch_hitch_info()
-            print(message)  # 打印获取信息条数的消息
-
-            if success:
-                keywords = ["奥迪", "特斯拉", "奔驰", "宝马", "小鹏", "理想", "大众CC", "英菲尼迪", "沃尔沃", "凯迪拉克"]
-                pickup_city = "北京", "上海"
-                count, search_results = self.fetcher.search_hitch_info(keywords, pickup_city)
-                self.print_search_results(count, search_results)
-            else:
-                print("顺风车信息获取失败，请检查网络或配置")
-
-            time.sleep(60)
-
-    def print_search_results(self, count, results):
-        if results:
-            output = "\n".join(results)
-            print(output)
-            for _ in range(10):  # 强推送提醒
-              self.send_webhook_notification(output)
-        else:
-            print("未找到包含任何关键字的顺风车信息")
-
-        print(f"总共找到 {count} 条包含关键字的顺风车信息")
-
     def send_webhook_notification(self, message):
         webhook_url = "webhook_url"
         params = {
@@ -131,6 +97,43 @@ class HitchSearchApp:
                 print(f"Webhook通知发送失败: HTTP状态码 {response.status_code}")
         except requests.RequestException as e:
             print(f"Webhook通知发送失败: 发生异常 {e}")
+
+class HitchSearchApp:
+    def __init__(self):
+        self.fetcher = HitchInfoFetcher()
+
+    def run(self):
+        while True:
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            print("\r")
+            print(f"执行时间: {current_time}")
+
+            try:
+                success, message = self.fetcher.fetch_hitch_info()
+                print(message)  # 打印获取信息条数的消息
+
+                if success:
+                    keywords = ["奥迪", "特斯拉", "奔驰", "宝马", "小鹏", "理想", "大众CC", "英菲尼迪", "沃尔沃", "凯迪拉克"]
+                    pickup_city = "北京", "上海"
+                    count, search_results = self.fetcher.search_hitch_info(keywords, pickup_city)
+                    self.print_search_results(count, search_results)
+                else:
+                    print("顺风车信息获取失败，请检查网络或配置")
+            except Exception as e:
+                print(f"发生异常: {e}")
+
+            time.sleep(60)
+
+    def print_search_results(self, count, results):
+        if results:
+            output = "\n".join(results)
+            print(output)
+            for _ in range(10):  # 强推送提醒10条信息
+                self.fetcher.send_webhook_notification(output)
+        else:
+            print("未找到包含任何关键字的顺风车信息")
+
+        print(f"总共找到 {count} 条包含关键字的顺风车信息")
 
 if __name__ == "__main__":
     app = HitchSearchApp()
